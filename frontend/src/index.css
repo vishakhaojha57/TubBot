@@ -1,0 +1,109 @@
+/* ─────────────────────────────────────────────────────────────
+   src/index.css  —  TubBot Global Stylesheet
+   ─────────────────────────────────────────────────────────── */
+
+/* ── Google Font — must precede all other statements ─────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* ── Root defaults ─────────────────────────────────────────── */
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Dark mode default */
+  html.dark {
+    background-color: #1A1A2E;
+    color: #E8E8F0;
+  }
+
+  /* Light mode */
+  html:not(.dark) {
+    background-color: #F5F5FF;
+    color: #1A1A2E;
+  }
+
+  body {
+    @apply m-0 antialiased;
+  }
+
+  /* Smooth scrolling */
+  * {
+    scroll-behavior: smooth;
+  }
+
+  /* ── Global transition on theme switch ─────────────────────── */
+  *, *::before, *::after {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-duration: 300ms;
+    transition-timing-function: ease;
+  }
+
+  /* ── Custom scrollbar — Dark mode ──────────────────────────── */
+  .dark ::-webkit-scrollbar,
+  .dark::-webkit-scrollbar {
+    width: 6px;
+  }
+  .dark ::-webkit-scrollbar-track,
+  .dark::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .dark ::-webkit-scrollbar-thumb,
+  .dark::-webkit-scrollbar-thumb {
+    background: #2E2E5E;
+    border-radius: 3px;
+  }
+  .dark ::-webkit-scrollbar-thumb:hover,
+  .dark::-webkit-scrollbar-thumb:hover {
+    background: #3A3A6E;
+  }
+
+  /* ── Custom scrollbar — Light mode ─────────────────────────── */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #DDDDF0;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #CCCCDD;
+  }
+}
+
+/* ── Skeleton pulse animation (theme-aware via CSS vars) ───── */
+@layer utilities {
+  .skeleton-pulse {
+    background: linear-gradient(90deg, var(--sk-from) 25%, var(--sk-to) 50%, var(--sk-from) 75%);
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.5s infinite;
+  }
+}
+
+.dark .skeleton-pulse {
+  --sk-from: #252550;
+  --sk-to: #2E2E5E;
+}
+
+:root .skeleton-pulse {
+  --sk-from: #EEEEFF;
+  --sk-to: #DDDDF0;
+}
+
+.dark .skeleton-pulse {
+  --sk-from: #252550;
+  --sk-to: #2E2E5E;
+}
+
+@keyframes skeletonShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

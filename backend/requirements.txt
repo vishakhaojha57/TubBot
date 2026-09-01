@@ -1,0 +1,42 @@
+# ─────────────────────────────────────────────────────────────
+# Backend Dependencies
+# Install with: pip install -r requirements.txt
+# ─────────────────────────────────────────────────────────────
+
+# FastAPI web framework
+fastapi>=0.111.0
+
+# ASGI server to run FastAPI
+uvicorn[standard]>=0.29.0
+
+# Reads .env file into environment variables
+python-dotenv>=1.0.1
+
+# Fetches YouTube video transcripts (no API key required)
+youtube-transcript-api>=0.6.2
+
+# Google Gemini SDK (used in llm_service for generation)
+google-generativeai>=0.5.4
+
+# Pydantic for request/response validation
+pydantic>=2.7.1
+
+requests>=2.31.0
+
+# ─────────────────────────────────────────────────────────────
+# RAG Pipeline Dependencies
+# ─────────────────────────────────────────────────────────────
+
+# LangChain text splitting utilities
+langchain>=0.2.0
+langchain-text-splitters>=0.2.0
+
+# Google Generative AI embeddings via LangChain
+# (text-embedding-004 model, no local model download needed)
+langchain-google-genai>=1.0.0
+
+# FAISS vector similarity search (CPU-only build)
+faiss-cpu>=1.8.0
+
+# NumPy (required by FAISS)
+numpy>=1.25.0
