@@ -10,7 +10,12 @@
 import re
 from urllib.parse import urlparse, parse_qs
 
-from youtube_transcript_api import YouTubeTranscriptApi, NoTranscriptFound, TranscriptsDisabled
+from youtube_transcript_api import (
+    YouTubeTranscriptApi,
+    NoTranscriptFound,
+    TranscriptsDisabled,
+    VideoUnavailable,
+)
 
 
 def extract_video_id(url: str) -> str:
@@ -60,8 +65,21 @@ def extract_video_id(url: str) -> str:
     raise ValueError(f"Could not extract a YouTube video ID from: {url!r}")
 
 
-# ── Reusable API client (youtube-transcript-api v1.x) ─────────
+# ── Reusable API client ───────────────────────────────────────
 _api = YouTubeTranscriptApi()
+
+
+def _fetch_transcript(video_id: str, languages: list[str] | None = None):
+    """Support both the v0.x and v1.x youtube transcript APIs."""
+    if hasattr(_api, "fetch"):
+        if languages:
+            return _api.fetch(video_id, languages=languages)
+        return _api.fetch(video_id)
+
+    # youtube-transcript-api 0.x exposes get_transcript as a class method.
+    if languages:
+        return YouTubeTranscriptApi.get_transcript(video_id, languages=languages)
+    return YouTubeTranscriptApi.get_transcript(video_id)
 
 
 def get_transcript(video_id: str) -> str:
@@ -79,10 +97,8 @@ def get_transcript(video_id: str) -> str:
     
     try:
         # Prefer manually-created English captions; fall back to auto-generated.
-        # v1.x API: instance method .fetch() returns FetchedTranscript
-        # (an iterable of FetchedTranscriptSnippet dataclass objects).
         logger.info(f"Fetching transcript for video_id: {video_id}")
-        transcript = _api.fetch(
+        transcript = _fetch_transcript(
             video_id,
             languages=["en", "en-US", "en-GB"],
         )
@@ -91,7 +107,7 @@ def get_transcript(video_id: str) -> str:
         logger.warning(f"No English transcript found, trying any language: {e}")
         # Try getting any available transcript (may not be English)
         try:
-            transcript = _api.fetch(video_id)
+            transcript = _fetch_transcript(video_id)
             logger.info(f"Fetched transcript in available language")
         except Exception as e:
             logger.error(f"Failed to fetch any transcript: {e}")
@@ -105,11 +121,24 @@ def get_transcript(video_id: str) -> str:
             "Transcripts are disabled for this video. "
             "Please try a different video."
         ) from e
+    except VideoUnavailable as e:
+        logger.error(f"Video is unavailable: {e}")
+        raise RuntimeError(
+            "This YouTube video is unavailable or has been removed. "
+            "Please try a different video."
+        ) from e
     except Exception as e:
         logger.error(f"Unexpected error fetching transcript: {e}")
-        raise RuntimeError(f"Failed to fetch transcript: {e}") from e
+        raise RuntimeError(
+            "Unable to fetch this video's transcript right now. "
+            "Please try again or use a different video."
+        ) from e
 
-    # Join all caption snippets into one continuous string.
-    # v1.x: each entry is a FetchedTranscriptSnippet with a .text attribute.
-    full_text = " ".join(snippet.text for snippet in transcript)
+    # v0.x returns dictionaries; v1.x returns snippet objects.
+    full_text = " ".join(
+        snippet.text if hasattr(snippet, "text") else snippet["text"]
+        for snippet in transcript
+    ).strip()
+    if not full_text:
+        raise RuntimeError("The video transcript is empty.")
     return full_text

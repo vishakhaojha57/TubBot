@@ -32,6 +32,6 @@ export async function summarizeVideo(youtubeUrl) {
     const detail =
       error?.response?.data?.detail ||
       "Something went wrong. Please try again.";
-    throw new Error(detail);
+    throw new Error(detail, { cause: error });
   }
 }

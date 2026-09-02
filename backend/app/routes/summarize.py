@@ -73,11 +73,10 @@ async def summarize_video(request: SummarizeRequest):
     # ── Step 2: Fetch transcript ──────────────────────────────
     try:
         transcript = get_transcript(video_id)
-    except RuntimeError:
+    except RuntimeError as e:
         raise HTTPException(
             status_code=422,
-            detail="Could not load the video transcript. "
-                   "Please make sure the video has captions enabled."
+            detail=str(e),
         )
 
     # ── Step 3: RAG pipeline — retrieve relevant chunks ───────
