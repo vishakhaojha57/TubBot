@@ -74,29 +74,39 @@ def get_transcript(video_id: str) -> str:
     Raises:
         RuntimeError: if no transcript is available (disabled or private video).
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    
     try:
         # Prefer manually-created English captions; fall back to auto-generated.
         # v1.x API: instance method .fetch() returns FetchedTranscript
         # (an iterable of FetchedTranscriptSnippet dataclass objects).
+        logger.info(f"Fetching transcript for video_id: {video_id}")
         transcript = _api.fetch(
             video_id,
             languages=["en", "en-US", "en-GB"],
         )
-    except NoTranscriptFound:
+        logger.info(f"Successfully fetched transcript with {len(transcript)} entries")
+    except NoTranscriptFound as e:
+        logger.warning(f"No English transcript found, trying any language: {e}")
         # Try getting any available transcript (may not be English)
         try:
             transcript = _api.fetch(video_id)
+            logger.info(f"Fetched transcript in available language")
         except Exception as e:
+            logger.error(f"Failed to fetch any transcript: {e}")
             raise RuntimeError(
                 "No transcript found for this video. "
                 "It may be auto-generated captions are disabled."
             ) from e
-    except TranscriptsDisabled:
+    except TranscriptsDisabled as e:
+        logger.error(f"Transcripts are disabled: {e}")
         raise RuntimeError(
             "Transcripts are disabled for this video. "
             "Please try a different video."
-        )
+        ) from e
     except Exception as e:
+        logger.error(f"Unexpected error fetching transcript: {e}")
         raise RuntimeError(f"Failed to fetch transcript: {e}") from e
 
     # Join all caption snippets into one continuous string.
