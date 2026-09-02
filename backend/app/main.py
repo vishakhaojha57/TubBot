@@ -25,7 +25,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",              # Vite dev server default
         "http://localhost:3000",              # CRA / alternative dev server
-        "https://your-app-name.vercel.app",   # Production frontend (Vercel)
+        "https://tub-bot.vercel.app",         # Production frontend (Vercel)
     ],
     allow_credentials=True,
     allow_methods=["*"],
